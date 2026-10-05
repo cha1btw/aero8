@@ -4,7 +4,7 @@ import {
   Coffee, CreditCard, Fuel, Gift, LocateFixed, MapPin, Menu, Minus,
   Navigation, Plus, Search, ShoppingBag, Sparkles, X,
 } from 'lucide-react'
-import { calculateFillup, filterStations, formatMoney, fuelPrices, stations } from './lib/demo'
+import { calculateFillup, calculateTrip, filterStations, formatMoney, fuelPrices, routePresets, stations } from './lib/demo'
 import type { FuelName, ServiceName, Station } from './lib/demo'
 
 const googleLocation = 'https://maps.app.goo.gl/sBBd6VZ7mFaRdy976?g_st=it'
@@ -17,6 +17,30 @@ function Brand({ light = false }: { light?: boolean }) {
       <span className="brand-symbol" aria-hidden="true"><span /><span /></span>
       <span className="brand-word">AERO<span>8</span></span>
     </a>
+  )
+}
+
+function RouteProgress() {
+  const [progress, setProgress] = useState(0)
+  useEffect(() => {
+    const updateProgress = () => {
+      const scrollable = document.documentElement.scrollHeight - window.innerHeight
+      setProgress(scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0)
+    }
+    window.addEventListener('scroll', updateProgress, { passive: true })
+    window.addEventListener('resize', updateProgress)
+    updateProgress()
+    return () => {
+      window.removeEventListener('scroll', updateProgress)
+      window.removeEventListener('resize', updateProgress)
+    }
+  }, [])
+  return (
+    <svg className="route-progress" viewBox="0 0 48 1000" preserveAspectRatio="none" aria-hidden="true">
+      <path className="route-progress-track" pathLength="1" d="M24 0 C4 115 44 175 24 285 S4 445 24 555 S44 715 24 825 S4 935 24 1000" />
+      <path className="route-progress-fill" pathLength="1" strokeDasharray="1" strokeDashoffset={1 - progress} d="M24 0 C4 115 44 175 24 285 S4 445 24 555 S44 715 24 825 S4 935 24 1000" />
+      {[125, 375, 625, 875].map((point) => <circle className="route-progress-stop" key={point} cx="24" cy={point} r="7" />)}
+    </svg>
   )
 }
 
@@ -114,14 +138,14 @@ function StationMap({ visible, selectedId, onSelect }: { visible: Station[]; sel
       <div className="map-grid" />
       <svg className="map-art" viewBox="0 0 1000 620" preserveAspectRatio="none" aria-hidden="true">
         <defs>
-          <linearGradient id="land" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#eef1e9" /><stop offset="1" stopColor="#dfe7d9" /></linearGradient>
-          <pattern id="mapDots" width="18" height="18" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="#c2cbbc" /></pattern>
+          <linearGradient id="mapGround" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#f0f3ed" /><stop offset="1" stopColor="#e3ebe2" /></linearGradient>
+          <pattern id="mapDots" width="22" height="22" patternUnits="userSpaceOnUse"><circle cx="2" cy="2" r="1.2" fill="#b9c8ba" /></pattern>
         </defs>
-        <path d="M118 178 L168 134 L230 149 L274 104 L342 124 L390 95 L459 126 L505 97 L565 125 L621 110 L668 132 L724 122 L772 153 L818 148 L859 186 L842 231 L892 260 L863 302 L893 344 L850 387 L814 400 L801 449 L743 464 L707 506 L640 498 L588 536 L543 503 L496 515 L451 476 L392 500 L338 466 L289 474 L264 429 L219 418 L209 372 L167 351 L173 296 L133 275 L145 225 Z" fill="url(#land)" stroke="#a5b6a1" strokeWidth="3" />
-        <path d="M118 178 L168 134 L230 149 L274 104 L342 124 L390 95 L459 126 L505 97 L565 125 L621 110 L668 132 L724 122 L772 153 L818 148 L859 186 L842 231 L892 260 L863 302 L893 344 L850 387 L814 400 L801 449 L743 464 L707 506 L640 498 L588 536 L543 503 L496 515 L451 476 L392 500 L338 466 L289 474 L264 429 L219 418 L209 372 L167 351 L173 296 L133 275 L145 225 Z" fill="url(#mapDots)" opacity=".62" />
-        <path d="M188 230 Q360 272 540 209 T829 237 M190 343 Q390 327 575 357 T838 349 M302 460 Q483 390 698 454 M435 124 Q440 323 438 482 M596 125 Q560 279 610 483" fill="none" stroke="#fff" strokeWidth="10" opacity=".82" />
-        <path d="M188 230 Q360 272 540 209 T829 237 M190 343 Q390 327 575 357 T838 349 M302 460 Q483 390 698 454 M435 124 Q440 323 438 482 M596 125 Q560 279 610 483" fill="none" stroke="#d2dbce" strokeWidth="1.5" strokeDasharray="7 7" />
-        <path d="M640 510 Q700 505 746 479 Q798 462 870 493 L900 620 L593 620 Z" fill="#d8e8e9" opacity=".7" />
+        <rect width="1000" height="620" fill="url(#mapGround)" />
+        <rect width="1000" height="620" fill="url(#mapDots)" opacity=".48" />
+        <path d="M-30 205 C150 118 247 300 430 236 S726 80 1030 216 M-35 438 C160 340 323 514 506 421 S790 335 1035 465 M236 -30 C324 140 194 285 345 650 M720 -20 C600 140 814 320 672 650" fill="none" stroke="#fff" strokeWidth="17" opacity=".9" />
+        <path d="M-30 205 C150 118 247 300 430 236 S726 80 1030 216 M-35 438 C160 340 323 514 506 421 S790 335 1035 465 M236 -30 C324 140 194 285 345 650 M720 -20 C600 140 814 320 672 650" fill="none" stroke="#cbd8cb" strokeWidth="1.6" strokeDasharray="8 9" />
+        <path d="M645 525 C718 477 812 485 888 542 L936 660 L583 660 Z" fill="#d5e7e5" opacity=".58" />
       </svg>
       <div className="map-label map-label-lviv">ЛЬВІВ</div><div className="map-label map-label-kyiv">КИЇВ</div><div className="map-label map-label-dnipro">ДНІПРО</div><div className="map-label map-label-odesa">ОДЕСА</div>
       {visible.map((station) => (
@@ -146,9 +170,11 @@ function StationFinder() {
   const [service, setService] = useState<ServiceName | 'Усі'>('Усі')
   const [fuel, setFuel] = useState<FuelName | 'Усі'>('Усі')
   const [selectedId, setSelectedId] = useState(stations[0].id)
+  const [coffeeAdded, setCoffeeAdded] = useState(false)
   const filtered = useMemo(() => filterStations(stations, query, service, fuel), [query, service, fuel])
   const selected = filtered.find((station) => station.id === selectedId) ?? filtered[0]
   const routeUrl = selected ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${selected.address}, ${selected.city}`)}` : '#stations'
+  const selectStation = (id: string) => { setSelectedId(id); setCoffeeAdded(false) }
 
   return (
     <section className="stations-section section-pad" id="stations" aria-labelledby="stations-title">
@@ -165,21 +191,21 @@ function StationFinder() {
           </div>
           <div className="filter-row"><span className="filter-caption">СЕРВІСИ:</span>{services.map((item) => <button key={item} className={`filter-chip ${service === item ? 'active' : ''}`} type="button" onClick={() => setService(item)} aria-pressed={service === item}>{item}</button>)}</div>
           <div className="finder-main">
-            <StationMap visible={filtered} selectedId={selected?.id} onSelect={setSelectedId} />
+            <StationMap visible={filtered} selectedId={selected?.id} onSelect={selectStation} />
             <div className="station-list-panel">
               <div className="station-list-top"><div><span className="small-overline">ПОРУЧ З ВАМИ</span><h3>Наші станції</h3></div><span className="station-list-index">01 — 06</span></div>
               {filtered.length === 0 ? (
                 <div className="empty-stations"><MapPin size={34} /><h4>За вашим запитом станцій не знайдено</h4><p>Спробуйте інше місто або змініть фільтри.</p><button type="button" onClick={() => { setQuery(''); setService('Усі'); setFuel('Усі') }}>Скинути фільтри <ArrowRight size={16} /></button></div>
               ) : (
                 <ul className="station-list" aria-label="Список АЗС">
-                  {filtered.map((station) => <li key={station.id}><button className={`station-item ${selected?.id === station.id ? 'selected' : ''}`} type="button" onClick={() => setSelectedId(station.id)}>
+                  {filtered.map((station) => <li key={station.id}><button className={`station-item ${selected?.id === station.id ? 'selected' : ''}`} type="button" onClick={() => selectStation(station.id)}>
                     <span className="station-item-marker"><MapPin size={20} fill="currentColor" strokeWidth={1.5} /></span>
                     <span className="station-item-copy"><strong>{station.name}</strong><span>{station.city} · {station.address}</span><small><span className="open-dot" /> {station.hours}</small></span>
                     <ArrowUpRight className="station-item-arrow" size={18} />
                   </button></li>)}
                 </ul>
               )}
-              {selected && <div className="selected-station"><div className="selected-station-meta"><span>ОБРАНА АЗС</span><span>{selected.services.slice(0, 2).join(' · ')}</span></div><a href={routeUrl} target="_blank" rel="noreferrer" className="route-button">Прокласти маршрут <Navigation size={18} fill="currentColor" /></a></div>}
+              {selected && <div className="selected-station"><div className="selected-station-meta"><span>ОБРАНА АЗС</span><span>{selected.services.slice(0, 2).join(' · ')}</span></div><div className="pitstop-plan"><div className="pitstop-plan-heading"><span>МІЙ ПІТ-СТОП</span><strong data-testid="pitstop-summary">{coffeeAdded ? 12 : 7} хв</strong></div><div className="pitstop-plan-actions"><span><Fuel size={14} /> Пальне</span><button type="button" aria-pressed={coffeeAdded} disabled={!selected.services.includes('Кава')} onClick={() => setCoffeeAdded(!coffeeAdded)}><Coffee size={14} /> {coffeeAdded ? 'Каву додано' : 'Додати каву'}</button></div><small>Демо-план · без бронювання та реального списання бонусів</small></div><a href={routeUrl} target="_blank" rel="noreferrer" className="route-button">Прокласти маршрут <Navigation size={18} fill="currentColor" /></a></div>}
             </div>
           </div>
         </div>
@@ -206,15 +232,29 @@ function ExperienceSection() {
 }
 
 function Calculator() {
+  const [mode, setMode] = useState<'fillup' | 'route'>('fillup')
   const [fuel, setFuel] = useState<FuelName>('А-95')
   const [litres, setLitres] = useState(40)
+  const [routeId, setRouteId] = useState<string>(routePresets[0].id)
+  const [distanceKm, setDistanceKm] = useState<number>(routePresets[0].distanceKm)
+  const [consumption, setConsumption] = useState(8)
   const estimate = calculateFillup(fuel, litres)
+  const tripEstimate = calculateTrip(fuel, distanceKm, consumption)
+  const selectedRoute = routePresets.find((route) => route.id === routeId) ?? routePresets[0]
   const updateLitres = (value: number) => setLitres(Math.min(150, Math.max(0, Number.isFinite(value) ? value : 0)))
+  const updateDistance = (value: number) => setDistanceKm(Math.min(3000, Math.max(0, Number.isFinite(value) ? value : 0)))
+  const updateConsumption = (value: number) => setConsumption(Math.min(50, Math.max(0, Number.isFinite(value) ? value : 0)))
   return (
     <section className="calculator-section section-pad" aria-labelledby="calculator-title">
       <div className="container calculator-grid">
-        <div className="calculator-intro"><div className="eyebrow"><span className="eyebrow-square" /> РОЗРАХУЙТЕ ПОЇЗДКУ</div><h2 id="calculator-title">Плануйте<br /><em>з легкістю.</em></h2><p>Кілька секунд — і ви знаєте орієнтовну вартість заправки та скільки бонусів отримаєте в AERO8 Club.</p><div className="calculator-decoration"><span className="orbit orbit-one" /><span className="orbit orbit-two" /><span className="orbit-core">8</span></div></div>
-        <div className="calculator-card"><div className="calculator-card-header"><span>КАЛЬКУЛЯТОР ЗАПРАВКИ</span><span>01 / 02</span></div><div className="calculator-fields"><label className="form-label" htmlFor="calc-fuel">Оберіть пальне</label><div className="select-wrap"><Fuel size={19} /><select id="calc-fuel" value={fuel} onChange={(event) => setFuel(event.target.value as FuelName)}>{fuelNames.map((name) => <option key={name} value={name}>{name} — {formatMoney(fuelPrices[name])} ₴/л</option>)}</select><ChevronDown size={18} /></div><label className="form-label" htmlFor="calc-litres">Кількість літрів</label><div className="litres-control"><button type="button" onClick={() => updateLitres(litres - 5)} aria-label="Зменшити кількість літрів"><Minus size={18} /></button><div><input id="calc-litres" type="number" inputMode="decimal" min="0" max="150" value={litres} onChange={(event) => updateLitres(Number(event.target.value))} aria-label="Кількість літрів" /><span>літрів</span></div><button type="button" onClick={() => updateLitres(litres + 5)} aria-label="Збільшити кількість літрів"><Plus size={18} /></button></div></div><div className="calculator-result"><div><span>ОРІЄНТОВНА ВАРТІСТЬ</span><strong data-testid="fillup-total">{formatMoney(estimate.total)} ₴</strong></div><div className="bonus-preview"><Sparkles size={18} /> +{estimate.points} демо-бонусів</div></div><a href="#stations" className="button button-primary calculator-cta">Знайти найближчу АЗС <ArrowUpRight size={19} /></a><p className="calculator-note">Розрахунок демонстраційний. Реальна ціна та умови можуть відрізнятися.</p></div>
+        <div className="calculator-intro"><div className="eyebrow"><span className="eyebrow-square" /> МАРШРУТ НА 8</div><h2 id="calculator-title">Плануйте<br /><em>з легкістю.</em></h2><p>Виберіть маршрут, тип пального й витрату авто — побачите орієнтовну вартість дороги та демо-бонуси до зупинки AERO8 Club.</p><div className="calculator-decoration"><span className="orbit orbit-one" /><span className="orbit orbit-two" /><span className="orbit-core">8</span></div></div>
+        <div className="calculator-card"><div className="calculator-card-header"><span>{mode === 'route' ? 'ПЛАНУВАННЯ МАРШРУТУ' : 'КАЛЬКУЛЯТОР ЗАПРАВКИ'}</span><span>01 / 02</span></div><div className="calculator-mode" role="group" aria-label="Режим розрахунку"><button type="button" aria-pressed={mode === 'fillup'} className={mode === 'fillup' ? 'active' : ''} onClick={() => setMode('fillup')}>Заправка</button><button type="button" aria-pressed={mode === 'route'} className={mode === 'route' ? 'active' : ''} onClick={() => setMode('route')}>Маршрут</button></div>
+          <div className="calculator-fields"><label className="form-label" htmlFor="calc-fuel">Оберіть пальне</label><div className="select-wrap"><Fuel size={19} /><select id="calc-fuel" value={fuel} onChange={(event) => setFuel(event.target.value as FuelName)}>{fuelNames.map((name) => <option key={name} value={name}>{name} — {formatMoney(fuelPrices[name])} ₴/л</option>)}</select><ChevronDown size={18} /></div>
+            {mode === 'fillup' ? <><label className="form-label" htmlFor="calc-litres">Кількість літрів</label><div className="litres-control"><button type="button" onClick={() => updateLitres(litres - 5)} aria-label="Зменшити кількість літрів"><Minus size={18} /></button><div><input id="calc-litres" type="number" inputMode="decimal" min="0" max="150" value={litres} onChange={(event) => updateLitres(Number(event.target.value))} aria-label="Кількість літрів" /><span>літрів</span></div><button type="button" onClick={() => updateLitres(litres + 5)} aria-label="Збільшити кількість літрів"><Plus size={18} /></button></div></> : <>
+              <div className="route-presets" role="group" aria-label="Готові демо-маршрути">{routePresets.map((route) => <button type="button" key={route.id} aria-pressed={selectedRoute.id === route.id} className={selectedRoute.id === route.id ? 'active' : ''} onClick={() => { setRouteId(route.id); updateDistance(route.distanceKm) }}><span>{route.title}</span><small>{route.mood} · {route.distanceKm} км</small></button>)}</div>
+              <div className="trip-inputs"><label className="trip-input" htmlFor="trip-distance"><span>Відстань</span><div><input id="trip-distance" data-testid="trip-distance" type="number" min="0" max="3000" value={distanceKm} onChange={(event) => updateDistance(Number(event.target.value))} /><span>км</span></div></label><label className="trip-input" htmlFor="trip-consumption"><span>Витрата автомобіля (л/100 км)</span><div><input id="trip-consumption" type="number" min="0" max="50" step="0.1" value={consumption} onChange={(event) => updateConsumption(Number(event.target.value))} /><span>л</span></div></label></div>
+            </>}
+          </div><div className="calculator-result"><div><span>{mode === 'route' ? 'ОРІЄНТОВНА ВАРТІСТЬ МАРШРУТУ' : 'ОРІЄНТОВНА ВАРТІСТЬ'}</span><strong data-testid={mode === 'route' ? 'trip-total' : 'fillup-total'}>{formatMoney(mode === 'route' ? tripEstimate.total : estimate.total)} ₴</strong>{mode === 'route' && <small data-testid="trip-litres">{tripEstimate.litres.toLocaleString('uk-UA')} л на шлях</small>}</div><div className="bonus-preview"><Sparkles size={18} /> +{mode === 'route' ? tripEstimate.points : estimate.points} демо-бонусів</div></div><a href="#stations" className="button button-primary calculator-cta">Знайти найближчу АЗС <ArrowUpRight size={19} /></a><p className="calculator-note">Демо-ціни та відстані наведені для одностороннього маршруту й не є реальною пропозицією.</p></div>
       </div>
     </section>
   )
@@ -251,5 +291,5 @@ function Footer({ onAccount }: { onAccount: () => void }) {
 
 export default function App() {
   const [accountOpen, setAccountOpen] = useState(false)
-  return <><Header onAccount={() => setAccountOpen(true)} /><main><Hero onAccount={() => setAccountOpen(true)} /><FuelSection /><StationFinder /><ExperienceSection /><Calculator /><LoyaltySection onAccount={() => setAccountOpen(true)} /></main><Footer onAccount={() => setAccountOpen(true)} />{accountOpen && <AccountDialog onClose={() => setAccountOpen(false)} />}</>
+  return <><RouteProgress /><Header onAccount={() => setAccountOpen(true)} /><main><Hero onAccount={() => setAccountOpen(true)} /><FuelSection /><StationFinder /><ExperienceSection /><Calculator /><LoyaltySection onAccount={() => setAccountOpen(true)} /></main><Footer onAccount={() => setAccountOpen(true)} />{accountOpen && <AccountDialog onClose={() => setAccountOpen(false)} />}</>
 }

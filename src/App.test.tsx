@@ -25,6 +25,28 @@ describe('AERO8 demo journeys', () => {
     expect(screen.getByTestId('fillup-total')).toHaveTextContent('2 479,60 ₴')
   })
 
+  it('estimates a selected demo route from distance and vehicle consumption', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Маршрут' }))
+    await user.click(screen.getByRole('button', { name: /Київ — Одеса/ }))
+    expect(screen.getByTestId('trip-distance')).toHaveValue(475)
+    expect(screen.getByTestId('trip-total')).toHaveTextContent('2 355,62 ₴')
+    const consumptionInput = screen.getByRole('spinbutton', { name: /Витрата автомобіля/ })
+    await user.clear(consumptionInput)
+    await user.type(consumptionInput, '10')
+    expect(screen.getByTestId('trip-total')).toHaveTextContent('2 944,53 ₴')
+  })
+
+  it('adds a coffee stop to the selected station pit-stop plan', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    expect(screen.getByTestId('pitstop-summary')).toHaveTextContent('7 хв')
+    await user.click(screen.getByRole('button', { name: 'Додати каву' }))
+    expect(screen.getByTestId('pitstop-summary')).toHaveTextContent('12 хв')
+    expect(screen.getByRole('button', { name: 'Каву додано' })).toHaveAttribute('aria-pressed', 'true')
+  })
+
   it('opens a demo account and displays loyalty balance', async () => {
     const user = userEvent.setup()
     render(<App />)

@@ -84,6 +84,12 @@ export const stations: Station[] = [
   },
 ]
 
+export const routePresets = [
+  { id: 'kyiv-odesa', title: 'Київ — Одеса', distanceKm: 475, mood: 'До моря' },
+  { id: 'lviv-karpaty', title: 'Львів — Карпати', distanceKm: 220, mood: 'На вихідні' },
+  { id: 'kyiv-chernihiv', title: 'Київ — Чернігів', distanceKm: 150, mood: 'Короткий виїзд' },
+] as const
+
 export function filterStations(
   items: Station[],
   query: string,
@@ -101,6 +107,18 @@ export function calculateFillup(fuel: FuelName, rawLitres: number): { total: num
   const litres = Number.isFinite(rawLitres) ? Math.min(150, Math.max(0, rawLitres)) : 0
   const total = Math.round(fuelPrices[fuel] * litres * 100) / 100
   return { total, points: Math.round(total * 0.03) }
+}
+
+export function calculateTrip(
+  fuel: FuelName,
+  rawDistanceKm: number,
+  rawConsumption: number,
+): { litres: number; total: number; points: number } {
+  const distanceKm = Number.isFinite(rawDistanceKm) ? Math.min(3000, Math.max(0, rawDistanceKm)) : 0
+  const consumption = Number.isFinite(rawConsumption) ? Math.min(50, Math.max(0, rawConsumption)) : 0
+  const litres = Math.round(distanceKm * consumption) / 100
+  const total = Math.round(fuelPrices[fuel] * litres * 100) / 100
+  return { litres, total, points: Math.round(total * 0.03) }
 }
 
 export const formatMoney = (value: number) =>
