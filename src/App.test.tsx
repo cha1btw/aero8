@@ -47,6 +47,15 @@ describe('AERO8 demo journeys', () => {
     expect(screen.getByRole('button', { name: 'Каву додано' })).toHaveAttribute('aria-pressed', 'true')
   })
 
+  it('resets the coffee stop when a filter changes the selected station', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole('button', { name: 'Додати каву' }))
+    await user.click(screen.getByRole('button', { name: 'Мийка' }))
+    expect(screen.getByTestId('pitstop-summary')).toHaveTextContent('7 хв')
+    expect(screen.getByRole('button', { name: 'Додати каву' })).toHaveAttribute('aria-pressed', 'false')
+  })
+
   it('opens a demo account and displays loyalty balance', async () => {
     const user = userEvent.setup()
     render(<App />)

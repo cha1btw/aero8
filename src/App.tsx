@@ -170,11 +170,12 @@ function StationFinder() {
   const [service, setService] = useState<ServiceName | 'Усі'>('Усі')
   const [fuel, setFuel] = useState<FuelName | 'Усі'>('Усі')
   const [selectedId, setSelectedId] = useState(stations[0].id)
-  const [coffeeAdded, setCoffeeAdded] = useState(false)
+  const [coffeeStationId, setCoffeeStationId] = useState<string | null>(null)
   const filtered = useMemo(() => filterStations(stations, query, service, fuel), [query, service, fuel])
   const selected = filtered.find((station) => station.id === selectedId) ?? filtered[0]
+  const coffeeAdded = selected?.id === coffeeStationId
   const routeUrl = selected ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${selected.address}, ${selected.city}`)}` : '#stations'
-  const selectStation = (id: string) => { setSelectedId(id); setCoffeeAdded(false) }
+  const selectStation = (id: string) => { setSelectedId(id); setCoffeeStationId(null) }
 
   return (
     <section className="stations-section section-pad" id="stations" aria-labelledby="stations-title">
@@ -205,7 +206,7 @@ function StationFinder() {
                   </button></li>)}
                 </ul>
               )}
-              {selected && <div className="selected-station"><div className="selected-station-meta"><span>ОБРАНА АЗС</span><span>{selected.services.slice(0, 2).join(' · ')}</span></div><div className="pitstop-plan"><div className="pitstop-plan-heading"><span>МІЙ ПІТ-СТОП</span><strong data-testid="pitstop-summary">{coffeeAdded ? 12 : 7} хв</strong></div><div className="pitstop-plan-actions"><span><Fuel size={14} /> Пальне</span><button type="button" aria-pressed={coffeeAdded} disabled={!selected.services.includes('Кава')} onClick={() => setCoffeeAdded(!coffeeAdded)}><Coffee size={14} /> {coffeeAdded ? 'Каву додано' : 'Додати каву'}</button></div><small>Демо-план · без бронювання та реального списання бонусів</small></div><a href={routeUrl} target="_blank" rel="noreferrer" className="route-button">Прокласти маршрут <Navigation size={18} fill="currentColor" /></a></div>}
+              {selected && <div className="selected-station"><div className="selected-station-meta"><span>ОБРАНА АЗС</span><span>{selected.services.slice(0, 2).join(' · ')}</span></div><div className="pitstop-plan"><div className="pitstop-plan-heading"><span>МІЙ ПІТ-СТОП</span><strong data-testid="pitstop-summary">{coffeeAdded ? 12 : 7} хв</strong></div><div className="pitstop-plan-actions"><span><Fuel size={14} /> Пальне</span><button type="button" aria-pressed={coffeeAdded} disabled={!selected.services.includes('Кава')} onClick={() => setCoffeeStationId(coffeeAdded ? null : selected.id)}><Coffee size={14} /> {coffeeAdded ? 'Каву додано' : 'Додати каву'}</button></div><small>Демо-план · без бронювання та реального списання бонусів</small></div><a href={routeUrl} target="_blank" rel="noreferrer" className="route-button">Прокласти маршрут <Navigation size={18} fill="currentColor" /></a></div>}
             </div>
           </div>
         </div>
