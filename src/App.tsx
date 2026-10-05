@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import {
-  ArrowDownRight, ArrowRight, ArrowUpRight, BatteryCharging, Check, ChevronDown,
+  ArrowRight, ArrowUpRight, BatteryCharging, Check, ChevronDown,
   Coffee, CreditCard, Fuel, Gift, LocateFixed, MapPin, Menu, Minus,
   Navigation, Plus, Search, ShoppingBag, Sparkles, X,
 } from 'lucide-react'
@@ -20,37 +20,13 @@ function Brand({ light = false }: { light?: boolean }) {
   )
 }
 
-function RouteProgress() {
-  const [progress, setProgress] = useState(0)
-  useEffect(() => {
-    const updateProgress = () => {
-      const scrollable = document.documentElement.scrollHeight - window.innerHeight
-      setProgress(scrollable > 0 ? Math.min(1, Math.max(0, window.scrollY / scrollable)) : 0)
-    }
-    window.addEventListener('scroll', updateProgress, { passive: true })
-    window.addEventListener('resize', updateProgress)
-    updateProgress()
-    return () => {
-      window.removeEventListener('scroll', updateProgress)
-      window.removeEventListener('resize', updateProgress)
-    }
-  }, [])
-  return (
-    <svg className="route-progress" viewBox="0 0 48 1000" preserveAspectRatio="none" aria-hidden="true">
-      <path className="route-progress-track" pathLength="1" d="M24 0 C4 115 44 175 24 285 S4 445 24 555 S44 715 24 825 S4 935 24 1000" />
-      <path className="route-progress-fill" pathLength="1" strokeDasharray="1" strokeDashoffset={1 - progress} d="M24 0 C4 115 44 175 24 285 S4 445 24 555 S44 715 24 825 S4 935 24 1000" />
-      {[125, 375, 625, 875].map((point) => <circle className="route-progress-stop" key={point} cx="24" cy={point} r="7" />)}
-    </svg>
-  )
-}
-
 function Header({ onAccount }: { onAccount: () => void }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const closeMenu = () => setMenuOpen(false)
   return (
     <header className="site-header">
       <div className="header-inner container">
-        <Brand light />
+        <Brand />
         <nav className={`main-nav ${menuOpen ? 'is-open' : ''}`} aria-label="Головна навігація">
           <a href="#stations" onClick={closeMenu}>Наші АЗС</a>
           <a href="#fuel" onClick={closeMenu}>Пальне</a>
@@ -72,24 +48,25 @@ function Header({ onAccount }: { onAccount: () => void }) {
   )
 }
 
-function Hero({ onAccount }: { onAccount: () => void }) {
+function Hero() {
   return (
     <section className="hero" id="top" aria-labelledby="hero-title">
-      <div className="hero-photo" role="img" aria-label="Сучасна автозаправна станція на заході сонця" />
-      <div className="hero-glow" />
-      <div className="container hero-content">
-        <div className="hero-kicker"><span className="kicker-line" /> НОВИЙ РИТМ ДОРОГИ <span className="kicker-asterisk">✦</span></div>
-        <h1 id="hero-title">Заряджені<br />на <em>рух.</em></h1>
-        <p>Енергія для кожного маршруту. Якісне пальне, улюблена кава та турбота, що завжди поруч.</p>
-        <div className="hero-buttons">
-          <a className="button button-primary" href="#stations">Знайти АЗС <ArrowUpRight size={19} /></a>
-          <button className="button button-outline" type="button" onClick={onAccount}>Приєднатися до Club <ArrowRight size={18} /></button>
+      <div className="container hero-layout">
+        <div className="hero-copy">
+          <div className="hero-kicker"><span className="kicker-line" /> AERO8 · ЕНЕРГІЯ В ДОРОЗІ</div>
+          <h1 id="hero-title">Зупинка,<br />що веде <em>далі.</em></h1>
+          <p>Пальне, кава та комфорт для вашого маршруту. Зупиніться на хвилину і продовжуйте шлях у своєму ритмі.</p>
+          <div className="hero-buttons">
+            <a className="button button-primary" href="#stations">Знайти АЗС <ArrowUpRight size={19} /></a>
+            <a className="hero-text-link" href="#calculator">Розрахувати поїздку <ArrowRight size={17} /></a>
+          </div>
+          <div className="hero-footnote">ПАЛЬНЕ <span /> КАВА <span /> AERO8 CLUB</div>
         </div>
-        <div className="hero-footnote"><span className="pulse-dot" /> Ваша зупинка. Ваш темп. AERO8.</div>
+        <div className="hero-media">
+          <div className="hero-photo" role="img" aria-label="Сучасна АЗС у зелених і білих кольорах" />
+          <div className="hero-media-caption"><span>AERO8</span><span>ВАША ЗУПИНКА НА ШЛЯХУ</span></div>
+        </div>
       </div>
-      <div className="hero-side-note">01 / ЕНЕРГІЯ В ДОРОЗІ</div>
-      <a className="hero-scroll" href="#fuel" aria-label="Прокрутити до цін на пальне"><span>ДІЗНАТИСЯ БІЛЬШЕ</span><ArrowDownRight size={17} /></a>
-      <div className="hero-bottom-line" />
     </section>
   )
 }
@@ -246,7 +223,7 @@ function Calculator() {
   const updateDistance = (value: number) => setDistanceKm(Math.min(3000, Math.max(0, Number.isFinite(value) ? value : 0)))
   const updateConsumption = (value: number) => setConsumption(Math.min(50, Math.max(0, Number.isFinite(value) ? value : 0)))
   return (
-    <section className="calculator-section section-pad" aria-labelledby="calculator-title">
+    <section className="calculator-section section-pad" id="calculator" aria-labelledby="calculator-title">
       <div className="container calculator-grid">
         <div className="calculator-intro"><div className="eyebrow"><span className="eyebrow-square" /> МАРШРУТ НА 8</div><h2 id="calculator-title">Плануйте<br /><em>з легкістю.</em></h2><p>Виберіть маршрут, тип пального й витрату авто — побачите орієнтовну вартість дороги та демо-бонуси до зупинки AERO8 Club.</p><div className="calculator-decoration"><span className="orbit orbit-one" /><span className="orbit orbit-two" /><span className="orbit-core">8</span></div></div>
         <div className="calculator-card"><div className="calculator-card-header"><span>{mode === 'route' ? 'ПЛАНУВАННЯ МАРШРУТУ' : 'КАЛЬКУЛЯТОР ЗАПРАВКИ'}</span><span>01 / 02</span></div><div className="calculator-mode" role="group" aria-label="Режим розрахунку"><button type="button" aria-pressed={mode === 'fillup'} className={mode === 'fillup' ? 'active' : ''} onClick={() => setMode('fillup')}>Заправка</button><button type="button" aria-pressed={mode === 'route'} className={mode === 'route' ? 'active' : ''} onClick={() => setMode('route')}>Маршрут</button></div>
@@ -292,5 +269,5 @@ function Footer({ onAccount }: { onAccount: () => void }) {
 
 export default function App() {
   const [accountOpen, setAccountOpen] = useState(false)
-  return <><RouteProgress /><Header onAccount={() => setAccountOpen(true)} /><main><Hero onAccount={() => setAccountOpen(true)} /><FuelSection /><StationFinder /><ExperienceSection /><Calculator /><LoyaltySection onAccount={() => setAccountOpen(true)} /></main><Footer onAccount={() => setAccountOpen(true)} />{accountOpen && <AccountDialog onClose={() => setAccountOpen(false)} />}</>
+  return <><Header onAccount={() => setAccountOpen(true)} /><main><Hero /><FuelSection /><StationFinder /><ExperienceSection /><Calculator /><LoyaltySection onAccount={() => setAccountOpen(true)} /></main><Footer onAccount={() => setAccountOpen(true)} />{accountOpen && <AccountDialog onClose={() => setAccountOpen(false)} />}</>
 }
